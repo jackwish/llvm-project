@@ -71,6 +71,14 @@ int llvm::Intrinsic::lookupLLVMIntrinsicByName(ArrayRef<const char *> NameTable,
   const char *const *Low = NameTable.begin();
   const char *const *High = NameTable.end();
   const char *const *LastLow = Low;
+  FILE* log = fopen("llvm.intrinsic.log", "w");
+  assert(log != NULL);
+  printf("================== dump all instrinsic BEGIN ==================\n");
+  for (const char* const* p = NameTable.begin(); p < NameTable.end(); p++) {
+    fprintf(log, "%s\n", *p);
+  }
+  printf("================== dump all instrinsic END ==================\n");
+  fclose(log);
   while (CmpEnd < Name.size() && High - Low > 0) {
     CmpStart = CmpEnd;
     CmpEnd = Name.find('.', CmpStart + 1);
