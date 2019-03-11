@@ -55,9 +55,27 @@ Optional<uint64_t> DbgVariableIntrinsic::getFragmentSizeInBits() const {
   return getVariable()->getSizeInBits();
 }
 
+
+void dumpIntrinsics(ArrayRef<const char *> NameTable) {
+  const char* env_key = "MY_LLVM_DUMP_INTRINSIC";
+  const char* env_value = getenv(env_key);
+  if (env_value == nullptr || atoi(env_value) == 0) {
+    return;
+  }
+  FILE* log = fopen("llvm.intrinsic.log", "w");
+  assert(log != NULL);
+  printf("================== dump all instrinsic BEGIN ==================\n");
+  for (const char* const* p = NameTable.begin(); p < NameTable.end(); p++) {
+    fprintf(log, "%s\n", *p);
+  }
+  printf("================== dump all instrinsic END ==================\n");
+  fclose(log);
+}
+
 int llvm::Intrinsic::lookupLLVMIntrinsicByName(ArrayRef<const char *> NameTable,
                                                StringRef Name) {
   assert(Name.startswith("llvm."));
+  dumpIntrinsics(NameTable);
 
   // Do successive binary searches of the dotted name components. For
   // "llvm.gc.experimental.statepoint.p1i8.p1i32", we will find the range of
@@ -71,14 +89,6 @@ int llvm::Intrinsic::lookupLLVMIntrinsicByName(ArrayRef<const char *> NameTable,
   const char *const *Low = NameTable.begin();
   const char *const *High = NameTable.end();
   const char *const *LastLow = Low;
-  FILE* log = fopen("llvm.intrinsic.log", "w");
-  assert(log != NULL);
-  printf("================== dump all instrinsic BEGIN ==================\n");
-  for (const char* const* p = NameTable.begin(); p < NameTable.end(); p++) {
-    fprintf(log, "%s\n", *p);
-  }
-  printf("================== dump all instrinsic END ==================\n");
-  fclose(log);
   while (CmpEnd < Name.size() && High - Low > 0) {
     CmpStart = CmpEnd;
     CmpEnd = Name.find('.', CmpStart + 1);
